@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share/share.dart';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 // import 'package:http/http.dart' as http;
 
 void main() => runApp(new MaterialApp(
@@ -16,11 +19,44 @@ class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => new _HomePageState();
 }
+class CounterStorage {
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    return directory.path;
+  }
+
+  Future<File> get _localFile async {
+    final path = await _localPath;
+    return File('$path/store.json');
+  }
+
+  Future<String> readCounter() async {
+    try {
+      final file = await _localFile;
+
+      // Read the file
+      String contents = await file.readAsString();
+
+      return contents;
+    } catch (e) {
+      // If encountering an error, return 0
+      return '';
+    }
+  }
+
+  Future<File> writeCounter(String json) async {
+    final file = await _localFile;
+
+    // Write the file
+    return file.writeAsString(json);
+  }
+}
 
 class _HomePageState extends State<HomePage> {
   TextEditingController controller = new TextEditingController();
   SharedPreferences sharedPreferences;
-
+  final storage = new CounterStorage();
   final formKey = new GlobalKey<FormState>();
   String _name;
   double _lowPrice;
@@ -75,12 +111,15 @@ class _HomePageState extends State<HomePage> {
       icon: const Icon(Icons.share),
       tooltip: 'Share database',
       onPressed: () {
-        final RenderBox box = context.findRenderObject();
-        Share.share(json.encode(_productDetails),
-            subject: "hey",
-            sharePositionOrigin:
-            box.localToGlobal(Offset.zero) &
-            box.size);
+        shareJson();
+        // final RenderBox box = context.findRenderObject();
+
+        // Share.shareFiles(['${storage .path}/image.jpg'], text: 'Great picture');
+        // Share.share(json.encode(_productDetails),
+        //     subject: "hey",
+        //     sharePositionOrigin:
+        //     box.localToGlobal(Offset.zero) &
+        //     box.size);
         // scaffoldKey.currentState.showSnackBar(snackBar);
       },
     ),
@@ -203,7 +242,11 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
+  void shareJson() async{
+    storage.writeCounter(json.encode(_productDetails));
+    final path = await storage._localPath;
+    Share.shareFiles(['$path/store.json'], text: 'Product database');
+  }
   double calculateVat(double value) {
     return value + (value * 0.165);
   }
