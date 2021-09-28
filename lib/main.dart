@@ -93,7 +93,10 @@ class _HomePageState extends State<HomePage> {
   loadData() {
     String listString = sharedPreferences.getString('list');
     // print();
+    addProducts(listString);
+  }
 
+  addProducts(listString) {
     setState(() {
       for (Map user in json.decode(listString)) {
         _productDetails.add(ProductDetails.fromJson(user));
@@ -251,7 +254,15 @@ class _HomePageState extends State<HomePage> {
 
     if (result != null) {
       File file = File(result.files.single.path);
-      print(file);
+
+      var fil = await file.readAsString();
+      await sharedPreferences.setString('list', jsonEncode(fil));
+
+      setState(() {
+        addProducts(fil);
+      });
+      // loadData();
+      // loadData();
     } else {
       // User canceled the picker
     }
@@ -262,220 +273,221 @@ class _HomePageState extends State<HomePage> {
   }
 
   buildList(items) {
-    return ListView.builder(
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        return Center(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: new Card(
-                  elevation: 8.0,
-                  child: Column(
-                    children: [
-                      new ListTile(
-                        leading: new IconButton(
-                          icon: Icon(Icons.edit),
-                          onPressed: () {
-                            int idx = (items[index].originalIndex == null
-                                ? index
-                                : items[index].originalIndex);
-                            print(idx.toString());
-                            setState(() {
-                              _name = items[index].name;
-                              _lowPrice = items[index].low;
-                              _medPrice = items[index].med;
-                              _highPrice = items[index].high;
-                            });
-                            // formKey.
-                            showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    scrollable: true,
-                                    title: Text('Add Product'),
-                                    content: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Form(
-                                        key: formKey,
-                                        child: Column(
-                                          children: <Widget>[
-                                            TextFormField(
-                                              initialValue: items[index].name,
-                                              onSaved: (value) => _name = value,
-                                              decoration: InputDecoration(
-                                                labelText: 'Name',
-                                                icon: Icon(Icons.account_box),
+    return GridView.count(
+        crossAxisCount: 2,
+        children: List.generate(items.length, (index) {
+          return Center(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: new Card(
+                    elevation: 8.0,
+                    child: Column(
+                      children: [
+                        new ListTile(
+                          leading: new IconButton(
+                            icon: Icon(Icons.edit),
+                            onPressed: () {
+                              int idx = (items[index].originalIndex == null
+                                  ? index
+                                  : items[index].originalIndex);
+                              print(idx.toString());
+                              setState(() {
+                                _name = items[index].name;
+                                _lowPrice = items[index].low;
+                                _medPrice = items[index].med;
+                                _highPrice = items[index].high;
+                              });
+                              // formKey.
+                              showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      scrollable: true,
+                                      title: Text('Add Product'),
+                                      content: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Form(
+                                          key: formKey,
+                                          child: Column(
+                                            children: <Widget>[
+                                              TextFormField(
+                                                initialValue: items[index].name,
+                                                onSaved: (value) =>
+                                                    _name = value,
+                                                decoration: InputDecoration(
+                                                  labelText: 'Name',
+                                                  icon: Icon(Icons.account_box),
+                                                ),
                                               ),
-                                            ),
-                                            TextFormField(
-                                              initialValue:
-                                                  items[index].low.toString(),
-                                              onSaved: (value) => _lowPrice =
-                                                  double.parse(value),
-                                              decoration: InputDecoration(
-                                                labelText: 'Low',
-                                                icon: Icon(Icons.email),
+                                              TextFormField(
+                                                initialValue:
+                                                    items[index].low.toString(),
+                                                onSaved: (value) => _lowPrice =
+                                                    double.parse(value),
+                                                decoration: InputDecoration(
+                                                  labelText: 'Low',
+                                                  icon: Icon(Icons.email),
+                                                ),
                                               ),
-                                            ),
-                                            TextFormField(
-                                              // onSaved: (value) => _amount = value,
-                                              initialValue:
-                                                  items[index].med.toString(),
-                                              onSaved: (value) => _medPrice =
-                                                  double.parse(value),
-                                              decoration: InputDecoration(
-                                                labelText: 'Medium',
-                                                icon: Icon(Icons.email),
+                                              TextFormField(
+                                                // onSaved: (value) => _amount = value,
+                                                initialValue:
+                                                    items[index].med.toString(),
+                                                onSaved: (value) => _medPrice =
+                                                    double.parse(value),
+                                                decoration: InputDecoration(
+                                                  labelText: 'Medium',
+                                                  icon: Icon(Icons.email),
+                                                ),
                                               ),
-                                            ),
-                                            TextFormField(
-                                              // onSaved: (value) => _amount = value,
-                                              initialValue:
-                                                  items[index].high.toString(),
-                                              onSaved: (value) => _highPrice =
-                                                  double.parse(value),
-                                              decoration: InputDecoration(
-                                                labelText: 'High',
-                                                icon: Icon(Icons.email),
+                                              TextFormField(
+                                                // onSaved: (value) => _amount = value,
+                                                initialValue: items[index]
+                                                    .high
+                                                    .toString(),
+                                                onSaved: (value) => _highPrice =
+                                                    double.parse(value),
+                                                decoration: InputDecoration(
+                                                  labelText: 'High',
+                                                  icon: Icon(Icons.email),
+                                                ),
                                               ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    actions: [
-                                      RaisedButton(
-                                          child: Text("Submit"),
-                                          onPressed: () {
-                                            final form = formKey.currentState;
-                                            form.save();
-                                            _productDetails[idx].name = _name;
-                                            _productDetails[idx].low =
-                                                _lowPrice;
-                                            _productDetails[idx].med =
-                                                _medPrice;
-                                            _productDetails[idx].high =
-                                                _highPrice;
+                                      actions: [
+                                        RaisedButton(
+                                            child: Text("Submit"),
+                                            onPressed: () {
+                                              final form = formKey.currentState;
+                                              form.save();
+                                              _productDetails[idx].name = _name;
+                                              _productDetails[idx].low =
+                                                  _lowPrice;
+                                              _productDetails[idx].med =
+                                                  _medPrice;
+                                              _productDetails[idx].high =
+                                                  _highPrice;
 
-                                            items[index].name = _name;
-                                            items[index].low = _lowPrice;
-                                            items[index].med = _medPrice;
-                                            items[index].high = _highPrice;
+                                              items[index].name = _name;
+                                              items[index].low = _lowPrice;
+                                              items[index].med = _medPrice;
+                                              items[index].high = _highPrice;
 
-                                            setState(() {});
-                                            saveData();
-                                            Navigator.pop(context, false);
-                                          })
-                                    ],
-                                  );
-                                });
-                          },
+                                              setState(() {});
+                                              saveData();
+                                              Navigator.pop(context, false);
+                                            })
+                                      ],
+                                    );
+                                  });
+                            },
+                          ),
+                          trailing: new IconButton(
+                            icon: Icon(Icons.delete),
+                            onPressed: () {
+                              int idx = (items[index].originalIndex == null
+                                  ? index
+                                  : items[index].originalIndex);
+                              setState(() {
+                                _productDetails.removeAt(idx);
+                                _searchResult.clear();
+                              });
+                              saveData();
+                            },
+                          ),
+                          title: new Text(items[index].name.toUpperCase(),
+                              style: TextStyle(fontSize: 25)),
                         ),
-                        trailing: new IconButton(
-                          icon: Icon(Icons.delete),
-                          onPressed: () {
-                            int idx = (items[index].originalIndex == null
-                                ? index
-                                : items[index].originalIndex);
-                            setState(() {
-                              _productDetails.removeAt(idx);
-                              _searchResult.clear();
-                            });
-                            saveData();
-                          },
-                        ),
-                        title: new Text(items[index].name.toUpperCase(),
-                            style: TextStyle(fontSize: 25)),
-                      ),
-                      Text.rich(TextSpan(
-                        children: <InlineSpan>[
-                          WidgetSpan(
-                            child: FlatButton(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20)),
-                              child: Text(
-                                'Low MWK ${items[index].low.toString()}',
-                                style: new TextStyle(color: Colors.white),
+                        Text.rich(TextSpan(
+                          children: <InlineSpan>[
+                            WidgetSpan(
+                              child: FlatButton(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20)),
+                                child: Text(
+                                  'Low MWK ${items[index].low.toString()}',
+                                  style: new TextStyle(color: Colors.white),
+                                ),
+                                // color: Colors.blue,
+                                color: ((items[index].vat == items[index].low ||
+                                        items[index].vat == null)
+                                    ? Colors.blue
+                                    : Colors.blueGrey),
+                                onPressed: () {
+                                  // To do
+                                  setState(() {
+                                    items[index].vat = items[index].low;
+                                  });
+                                },
                               ),
-                              // color: Colors.blue,
-                              color: ((items[index].vat == items[index].low ||
-                                      items[index].vat == null)
-                                  ? Colors.blue
-                                  : Colors.blueGrey),
-                              onPressed: () {
-                                // To do
-                                setState(() {
-                                  items[index].vat = items[index].low;
-                                });
-                              },
                             ),
-                          ),
-                          WidgetSpan(
-                            child: FlatButton(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20)),
-                              child: Text(
-                                  'Med MWK ${items[index].med.toString()}',
-                                  style: new TextStyle(color: Colors.white)),
-                              color: (items[index].vat == items[index].med
-                                  ? Colors.blue
-                                  : Colors.blueGrey),
-                              onPressed: () {
-                                // To do
-                                setState(() {
-                                  items[index].vat = items[index].med;
-                                });
-                              },
+                            WidgetSpan(
+                              child: FlatButton(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20)),
+                                child: Text(
+                                    'Med MWK ${items[index].med.toString()}',
+                                    style: new TextStyle(color: Colors.white)),
+                                color: (items[index].vat == items[index].med
+                                    ? Colors.blue
+                                    : Colors.blueGrey),
+                                onPressed: () {
+                                  // To do
+                                  setState(() {
+                                    items[index].vat = items[index].med;
+                                  });
+                                },
+                              ),
                             ),
-                          ),
-                          WidgetSpan(
-                            child: FlatButton(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20)),
+                            WidgetSpan(
+                              child: FlatButton(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20)),
 
-                              child: Text(
-                                'High MWK ${items[index].high.toString()}',
-                                style: new TextStyle(color: Colors.white),
+                                child: Text(
+                                  'High MWK ${items[index].high.toString()}',
+                                  style: new TextStyle(color: Colors.white),
+                                ),
+                                color: (items[index].vat == items[index].high
+                                    ? Colors.blue
+                                    : Colors.blueGrey),
+                                // color: Colors.blue,
+                                onPressed: () {
+                                  // To do
+                                  setState(() {
+                                    items[index].vat = items[index].high;
+                                  });
+                                },
                               ),
-                              color: (items[index].vat == items[index].high
-                                  ? Colors.blue
-                                  : Colors.blueGrey),
-                              // color: Colors.blue,
-                              onPressed: () {
-                                // To do
-                                setState(() {
-                                  items[index].vat = items[index].high;
-                                });
-                              },
                             ),
-                          ),
-                          WidgetSpan(
-                            child: FlatButton(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20)),
-                              child: Text(
-                                  'VAT MWK ${items[index].vat == null ? calculateVat(items[index].low).toString() : calculateVat(items[index].vat).toString()}'),
-                              color: Colors.green,
-                              onPressed: () {
-                                // To do
-                              },
+                            WidgetSpan(
+                              child: FlatButton(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20)),
+                                child: Text(
+                                    'VAT MWK ${items[index].vat == null ? calculateVat(items[index].low).toString() : calculateVat(items[index].vat).toString()}'),
+                                color: Colors.green,
+                                onPressed: () {
+                                  // To do
+                                },
+                              ),
                             ),
-                          ),
-                          // TextSpan(text: 'the best!'),
-                        ],
-                      )),
-                    ],
+                            // TextSpan(text: 'the best!'),
+                          ],
+                        )),
+                      ],
+                    ),
+                    margin: const EdgeInsets.all(0.0),
                   ),
-                  margin: const EdgeInsets.all(0.0),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+              ],
+            ),
+          );
+        }));
   }
 
   onSearchTextChanged(String text) async {
