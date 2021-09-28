@@ -7,6 +7,7 @@ import 'package:share/share.dart';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 // import 'package:http/http.dart' as http;
 
@@ -19,6 +20,7 @@ class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => new _HomePageState();
 }
+
 class CounterStorage {
   Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
@@ -103,28 +105,23 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      appBar: new AppBar(
-        title: new Text('Home'),
-        elevation: 0.0,
-          actions: <Widget>[
-      IconButton(
-      icon: const Icon(Icons.share),
-      tooltip: 'Share database',
-      onPressed: () {
-        shareJson();
-        // final RenderBox box = context.findRenderObject();
-
-        // Share.shareFiles(['${storage .path}/image.jpg'], text: 'Great picture');
-        // Share.share(json.encode(_productDetails),
-        //     subject: "hey",
-        //     sharePositionOrigin:
-        //     box.localToGlobal(Offset.zero) &
-        //     box.size);
-        // scaffoldKey.currentState.showSnackBar(snackBar);
-      },
-    ),
-  ]
-      ),
+      appBar:
+          new AppBar(title: new Text('Home'), elevation: 0.0, actions: <Widget>[
+        IconButton(
+          icon: const Icon(Icons.share),
+          tooltip: 'Share database',
+          onPressed: () {
+            shareJson();
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.add),
+          tooltip: 'load database',
+          onPressed: () {
+            loadJson();
+          },
+        ),
+      ]),
       body: new Column(
         children: <Widget>[
           new Container(
@@ -242,11 +239,24 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-  void shareJson() async{
+
+  void shareJson() async {
     storage.writeCounter(json.encode(_productDetails));
     final path = await storage._localPath;
     Share.shareFiles(['$path/store.json'], text: 'Product database');
   }
+
+  void loadJson() async {
+    FilePickerResult result = await FilePicker.platform.pickFiles();
+
+    if (result != null) {
+      File file = File(result.files.single.path);
+      print(file);
+    } else {
+      // User canceled the picker
+    }
+  }
+
   double calculateVat(double value) {
     return value + (value * 0.165);
   }
