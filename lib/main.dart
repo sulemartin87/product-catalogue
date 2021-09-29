@@ -79,7 +79,6 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       for (Map user in json.decode(listString)) {
         _productDetails.add(ProductDetails.fromJson(user));
-
         print(user);
       }
     });
