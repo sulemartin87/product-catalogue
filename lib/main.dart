@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share/share.dart';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 // import 'package:http/http.dart' as http;
@@ -36,21 +35,15 @@ class CounterStorage {
   Future<String> readCounter() async {
     try {
       final file = await _localFile;
-
-      // Read the file
       String contents = await file.readAsString();
-
       return contents;
     } catch (e) {
-      // If encountering an error, return 0
       return '';
     }
   }
 
   Future<File> writeCounter(String json) async {
     final file = await _localFile;
-
-    // Write the file
     return file.writeAsString(json);
   }
 }
@@ -64,24 +57,11 @@ class _HomePageState extends State<HomePage> {
   double _lowPrice;
   double _medPrice;
   double _highPrice;
-  // Get json result and convert it to model. Then add
-  // Future<Null> getUserDetails() async {
-  //   final response = await http.get(url);
-  //   final responseJson = json.decode(response.body);
-  //
-  //   setState(() {
-  //     for (Map user in responseJson) {
-  //       _productDetails.add(ProductDetails.fromJson(user));
-  //     }
-  //   });
-  // }
 
   @override
   void initState() {
     super.initState();
     loadSharedPreferencesAndData();
-
-    // getUserDetails();
   }
 
   void loadSharedPreferencesAndData() async {
@@ -92,7 +72,6 @@ class _HomePageState extends State<HomePage> {
 
   loadData() {
     String listString = sharedPreferences.getString('list');
-    // print();
     addProducts(listString);
   }
 
@@ -220,15 +199,8 @@ class _HomePageState extends State<HomePage> {
                             high: _highPrice,
                           );
                           setState(() {
-                            // accountData.add(j);
                             _productDetails.add(j);
                           });
-                          // print(json.encode(accountData));
-                          // List<String> strList = _productDetails.map((e) => jsonEncode(e));
-                          //  _productDetails.map((e) => print(e.toString()));
-                          //  _productDetails.map((e) => print(e.vat));
-                          // String accountToJson(List<ProductDetails> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
-                          // List<String> strList = accountToJson(_productDetails);
                           print(jsonEncode(_productDetails));
                           saveData();
                           Navigator.pop(context, false);
@@ -257,15 +229,10 @@ class _HomePageState extends State<HomePage> {
 
       var fil = await file.readAsString();
       await sharedPreferences.setString('list', jsonEncode(fil));
-
       setState(() {
         addProducts(fil);
       });
-      // loadData();
-      // loadData();
-    } else {
-      // User canceled the picker
-    }
+    } else {}
   }
 
   double calculateVat(double value) {
@@ -299,7 +266,6 @@ class _HomePageState extends State<HomePage> {
                                 _medPrice = items[index].med;
                                 _highPrice = items[index].high;
                               });
-                              // formKey.
                               showDialog(
                                   context: context,
                                   builder: (BuildContext context) {
@@ -332,7 +298,6 @@ class _HomePageState extends State<HomePage> {
                                                 ),
                                               ),
                                               TextFormField(
-                                                // onSaved: (value) => _amount = value,
                                                 initialValue:
                                                     items[index].med.toString(),
                                                 onSaved: (value) => _medPrice =
@@ -343,7 +308,6 @@ class _HomePageState extends State<HomePage> {
                                                 ),
                                               ),
                                               TextFormField(
-                                                // onSaved: (value) => _amount = value,
                                                 initialValue: items[index]
                                                     .high
                                                     .toString(),
@@ -469,14 +433,12 @@ class _HomePageState extends State<HomePage> {
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(20)),
                                 child: Text(
-                                    'VAT MWK ${items[index].vat == null ? calculateVat(items[index].low).toString() : calculateVat(items[index].vat).toString()}'),
+                                  'VAT MWK ${items[index].vat == null ? calculateVat(items[index].low).toString() : calculateVat(items[index].vat).toString()}',
+                                  style: new TextStyle(color: Colors.white),
+                                ),
                                 color: Colors.green,
-                                onPressed: () {
-                                  // To do
-                                },
                               ),
                             ),
-                            // TextSpan(text: 'the best!'),
                           ],
                         )),
                       ],
@@ -508,7 +470,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   void saveData() {
-    // print(data);
     sharedPreferences.setString('list', jsonEncode(_productDetails));
   }
 }
