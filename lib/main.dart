@@ -79,7 +79,8 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       for (Map user in json.decode(listString)) {
         _productDetails.add(ProductDetails.fromJson(user));
-        print(_productDetails);
+
+        print(user);
       }
     });
   }
@@ -364,7 +365,7 @@ class _HomePageState extends State<HomePage> {
                             },
                           ),
                           title: new Text(items[index].name.toUpperCase(),
-                              style: TextStyle(fontSize: 25)),
+                              style: TextStyle(fontSize: 10)),
                         ),
                         Text.rich(TextSpan(
                           children: <InlineSpan>[
@@ -433,10 +434,13 @@ class _HomePageState extends State<HomePage> {
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(20)),
                                 child: Text(
-                                  'VAT MWK ${items[index].vat == null ? calculateVat(items[index].low).toString() : calculateVat(items[index].vat).toString()}',
+                                  ' plus VAT MWK ${items[index].vat == null ? calculateVat(items[index].low).toString() : calculateVat(items[index].vat).toString()}',
                                   style: new TextStyle(color: Colors.white),
                                 ),
                                 color: Colors.green,
+                                onLongPress: () {
+                                  // return null
+                                },
                               ),
                             ),
                           ],
@@ -460,7 +464,7 @@ class _HomePageState extends State<HomePage> {
     }
 
     _productDetails.asMap().forEach((index, userDetail) {
-      if (userDetail.name.contains(text)) {
+      if (userDetail.name.contains(text.toUpperCase())) {
         userDetail.originalIndex = index;
         _searchResult.add(userDetail);
       }
@@ -498,11 +502,16 @@ class ProductDetails {
         "high": high.toString(),
       };
   factory ProductDetails.fromJson(Map<String, dynamic> json) {
+    var name = json['name'];
+    var low = json['low'] ?? '0';
+    var med = json['med'] ?? '0';
+    var high = json['high'] ?? '0';
+
     return new ProductDetails(
-      name: json['name'],
-      low: double.parse(json['low']),
-      med: double.parse(json['med']),
-      high: double.parse(json['high']),
+      name: name.toUpperCase(),
+      low: double.parse(low.replaceAll(',', '')),
+      med: double.parse(med.replaceAll(',', '')),
+      high: double.parse(high.replaceAll(',', '')),
     );
   }
 }
