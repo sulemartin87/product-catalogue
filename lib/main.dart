@@ -8,7 +8,8 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
-// import 'package:http/http.dart' as http;
+
+import 'ProductDetail.dart';
 
 void main() => runApp(new MaterialApp(
       home: new HomePage(),
@@ -19,6 +20,10 @@ class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => new _HomePageState();
 }
+
+List<ProductDetails> _searchResult = [];
+
+List<ProductDetails> _productDetails = [];
 
 class CounterStorage {
   Future<String> get _localPath async {
@@ -77,11 +82,63 @@ class _HomePageState extends State<HomePage> {
 
   addProducts(listString) {
     setState(() {
-      for (Map user in json.decode(listString)) {
-        _productDetails.add(ProductDetails.fromJson(user));
-        print(user);
+      json.decode(listString).forEach((final String key, final value) {
+        for (Map product in value) {
+          _productDetails.add(ProductDetails.fromJson(product));
+        }
+      });
+    });
+  }
+
+  onSearchTextChanged(String text) async {
+    _searchResult.clear();
+    if (text.isEmpty) {
+      setState(() {});
+      return;
+    }
+
+    _productDetails.asMap().forEach((index, userDetail) {
+      if (userDetail.name.contains(text.toUpperCase())) {
+        userDetail.originalIndex = index;
+        _searchResult.add(userDetail);
       }
     });
+
+    setState(() {});
+  }
+
+  void saveData() {
+    sharedPreferences.setString('list', jsonEncode(_productDetails));
+  }
+
+  void shareJson() async {
+    storage.writeCounter(json.encode(_productDetails));
+    final path = await storage._localPath;
+    Share.shareFiles(['$path/store.json'], text: 'Product database');
+  }
+
+  void loadJson() async {
+    FilePickerResult result = await FilePicker.platform.pickFiles();
+
+    if (result != null) {
+      File file = File(result.files.single.path);
+      var fil = await file.readAsString();
+      setState(() {
+        addProducts(fil);
+      });
+    } else {}
+  }
+
+  void editProduct(n, l, m, h, index, array) {
+    //
+    array[index].name = n;
+    array[index].low = l;
+    array[index].med = m;
+    array[index].h = h;
+  }
+
+  double calculateVat(double value) {
+    return value + (value * 0.165);
   }
 
   @override
@@ -137,109 +194,89 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  scrollable: true,
-                  title: Text('Add Product'),
-                  content: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Form(
-                      key: formKey,
-                      child: Column(
-                        children: <Widget>[
-                          TextFormField(
-                            onSaved: (value) => _name = value,
-                            decoration: InputDecoration(
-                              labelText: 'Name',
-                              icon: Icon(Icons.account_box),
-                            ),
-                          ),
-                          TextFormField(
-                            onSaved: (value) => _lowPrice = double.parse(value),
-                            decoration: InputDecoration(
-                              labelText: 'Low',
-                              icon: Icon(Icons.email),
-                            ),
-                          ),
-                          TextFormField(
-                            // onSaved: (value) => _amount = value,
-                            onSaved: (value) => _medPrice = double.parse(value),
-                            decoration: InputDecoration(
-                              labelText: 'Medium',
-                              icon: Icon(Icons.email),
-                            ),
-                          ),
-                          TextFormField(
-                            // onSaved: (value) => _amount = value,
-                            onSaved: (value) =>
-                                _highPrice = double.parse(value),
-                            decoration: InputDecoration(
-                              labelText: 'High',
-                              icon: Icon(Icons.email),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  actions: [
-                    RaisedButton(
-                        child: Text("Submit"),
-                        onPressed: () {
-                          final form = formKey.currentState;
-                          form.save();
-                          ProductDetails j = new ProductDetails(
-                            name: _name,
-                            low: _lowPrice,
-                            med: _medPrice,
-                            high: _highPrice,
-                          );
-                          setState(() {
-                            _productDetails.add(j);
-                          });
-                          print(jsonEncode(_productDetails));
-                          saveData();
-                          Navigator.pop(context, false);
-                        })
-                  ],
-                );
-              });
-        },
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ),
+      floatingActionButton: mainFab(context),
     );
   }
 
-  void shareJson() async {
-    storage.writeCounter(json.encode(_productDetails));
-    final path = await storage._localPath;
-    Share.shareFiles(['$path/store.json'], text: 'Product database');
-  }
-
-  void loadJson() async {
-    FilePickerResult result = await FilePicker.platform.pickFiles();
-
-    if (result != null) {
-      File file = File(result.files.single.path);
-
-      var fil = await file.readAsString();
-      await sharedPreferences.setString('list', jsonEncode(fil));
-      setState(() {
-        addProducts(fil);
-      });
-    } else {}
-  }
-
-  double calculateVat(double value) {
-    return value + (value * 0.165);
+  FloatingActionButton mainFab(BuildContext context) {
+    var n, l, m, h;
+    return FloatingActionButton(
+      onPressed: () {
+        showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                scrollable: true,
+                title: Text('Add Product'),
+                content: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      children: <Widget>[
+                        TextFormField(
+                          onSaved: (value) => n = value,
+                          decoration: InputDecoration(
+                            labelText: 'Name',
+                            icon: Icon(Icons.account_box),
+                          ),
+                        ),
+                        TextFormField(
+                          onSaved: (value) => _lowPrice = double.parse(value),
+                          decoration: InputDecoration(
+                            labelText: 'Low',
+                            icon: Icon(Icons.email),
+                          ),
+                        ),
+                        TextFormField(
+                          // onSaved: (value) => _amount = value,
+                          onSaved: (value) => m = double.parse(value),
+                          decoration: InputDecoration(
+                            labelText: 'Medium',
+                            icon: Icon(Icons.email),
+                          ),
+                        ),
+                        TextFormField(
+                          // onSaved: (value) => _amount = value,
+                          onSaved: (value) => h = double.parse(value),
+                          decoration: InputDecoration(
+                            labelText: 'High',
+                            icon: Icon(Icons.email),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                actions: [
+                  RaisedButton(
+                      child: Text("Submit"),
+                      onPressed: () {
+                        final form = formKey.currentState;
+                        form.save();
+                        ProductDetails j = new ProductDetails(
+                          name: n,
+                          low: l,
+                          med: m,
+                          high: h,
+                        );
+                        setState(() {
+                          _productDetails.add(j);
+                        });
+                        saveData();
+                        Navigator.pop(context, false);
+                      })
+                ],
+              );
+            });
+      },
+      tooltip: 'Increment',
+      child: Icon(Icons.add),
+    );
   }
 
   buildList(items) {
+    var l, m, h, n;
     return GridView.count(
         crossAxisCount: 2,
         children: List.generate(items.length, (index) {
@@ -261,10 +298,10 @@ class _HomePageState extends State<HomePage> {
                                   : items[index].originalIndex);
                               print(idx.toString());
                               setState(() {
-                                _name = items[index].name;
-                                _lowPrice = items[index].low;
-                                _medPrice = items[index].med;
-                                _highPrice = items[index].high;
+                                n = items[index].name;
+                                l = items[index].low;
+                                m = items[index].med;
+                                h = items[index].high;
                               });
                               showDialog(
                                   context: context,
@@ -328,6 +365,7 @@ class _HomePageState extends State<HomePage> {
                                             onPressed: () {
                                               final form = formKey.currentState;
                                               form.save();
+
                                               _productDetails[idx].name = _name;
                                               _productDetails[idx].low =
                                                   _lowPrice;
@@ -453,64 +491,5 @@ class _HomePageState extends State<HomePage> {
             ),
           );
         }));
-  }
-
-  onSearchTextChanged(String text) async {
-    _searchResult.clear();
-    if (text.isEmpty) {
-      setState(() {});
-      return;
-    }
-
-    _productDetails.asMap().forEach((index, userDetail) {
-      if (userDetail.name.contains(text.toUpperCase())) {
-        userDetail.originalIndex = index;
-        _searchResult.add(userDetail);
-      }
-    });
-
-    setState(() {});
-  }
-
-  void saveData() {
-    sharedPreferences.setString('list', jsonEncode(_productDetails));
-  }
-}
-
-List<ProductDetails> _searchResult = [];
-
-List<ProductDetails> _productDetails = [];
-
-class ProductDetails {
-  String name;
-  double low, med, high, selected, vat;
-  int originalIndex;
-
-  ProductDetails(
-      {this.name,
-      this.low,
-      this.med,
-      this.high,
-      this.selected,
-      this.vat,
-      this.originalIndex});
-  Map<String, dynamic> toJson() => {
-        "name": name,
-        "low": low.toString(),
-        "med": med.toString(),
-        "high": high.toString(),
-      };
-  factory ProductDetails.fromJson(Map<String, dynamic> json) {
-    var name = json['name'];
-    var low = json['low'] ?? '0';
-    var med = json['med'] ?? '0';
-    var high = json['high'] ?? '0';
-
-    return new ProductDetails(
-      name: name.toUpperCase(),
-      low: double.parse(low.replaceAll(',', '')),
-      med: double.parse(med.replaceAll(',', '')),
-      high: double.parse(high.replaceAll(',', '')),
-    );
   }
 }
