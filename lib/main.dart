@@ -243,6 +243,27 @@ class _HomePageState extends State<HomePage> {
     return GridView.count(
         crossAxisCount: 2,
         children: List.generate(items.length, (index) {
+          var vat = items[index].vat;
+          var n = items[index].name;
+          var l = items[index].low;
+          var m = items[index].med;
+          var h = items[index].high;
+          var myCard = (left, right) => {
+                ListTile(
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Text(left),
+                      Text(right),
+                    ],
+                  ),
+                  onTap: () {
+                    setState(() {
+                      items[index].vat = double.parse(right);
+                    });
+                  },
+                )
+              };
           return Center(
             child: Column(
               children: [
@@ -363,87 +384,19 @@ class _HomePageState extends State<HomePage> {
                               saveData();
                             },
                           ),
-                          title: new Text(items[index].name.toUpperCase(),
-                              style: TextStyle(fontSize: 10)),
+                          title: new Text(n.toUpperCase(),
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold)),
                         ),
-                        Text.rich(TextSpan(
-                          children: <InlineSpan>[
-                            WidgetSpan(
-                              child: FlatButton(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20)),
-                                child: Text(
-                                  'Low MWK ${items[index].low.toString()}',
-                                  style: new TextStyle(color: Colors.white),
-                                ),
-                                // color: Colors.blue,
-                                color: ((items[index].vat == items[index].low ||
-                                        items[index].vat == null)
-                                    ? Colors.blue
-                                    : Colors.blueGrey),
-                                onPressed: () {
-                                  // To do
-                                  setState(() {
-                                    items[index].vat = items[index].low;
-                                  });
-                                },
-                              ),
-                            ),
-                            WidgetSpan(
-                              child: FlatButton(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20)),
-                                child: Text(
-                                    'Med MWK ${items[index].med.toString()}',
-                                    style: new TextStyle(color: Colors.white)),
-                                color: (items[index].vat == items[index].med
-                                    ? Colors.blue
-                                    : Colors.blueGrey),
-                                onPressed: () {
-                                  // To do
-                                  setState(() {
-                                    items[index].vat = items[index].med;
-                                  });
-                                },
-                              ),
-                            ),
-                            WidgetSpan(
-                              child: FlatButton(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20)),
-
-                                child: Text(
-                                  'High MWK ${items[index].high.toString()}',
-                                  style: new TextStyle(color: Colors.white),
-                                ),
-                                color: (items[index].vat == items[index].high
-                                    ? Colors.blue
-                                    : Colors.blueGrey),
-                                // color: Colors.blue,
-                                onPressed: () {
-                                  // To do
-                                  setState(() {
-                                    items[index].vat = items[index].high;
-                                  });
-                                },
-                              ),
-                            ),
-                            WidgetSpan(
-                              child: FlatButton(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20)),
-                                child: Text(
-                                  ' plus VAT MWK ${items[index].vat == null ? calculateVat(items[index].low).toString() : calculateVat(items[index].vat).toString()}',
-                                  style: new TextStyle(color: Colors.white),
-                                ),
-                                color: Colors.green,
-                                onLongPress: () {
-                                  // return null
-                                },
-                              ),
-                            ),
+                        Column(
+                          children: [
+                            ...myCard('low', '$l'),
+                            ...myCard('med', '$m'),
+                            ...myCard('high', '$h'),
+                            ...myCard('plus VAT',
+                                '${vat == null ? calculateVat(l).toString() : calculateVat(vat).toString()}'),
                           ],
-                        )),
+                        ),
                       ],
                     ),
                     margin: const EdgeInsets.all(0.0),
